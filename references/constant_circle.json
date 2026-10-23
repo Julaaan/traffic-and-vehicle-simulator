@@ -1,0 +1,37 @@
+{
+  "name": "constant_circle",
+  "reference_kind": "analytical",
+  "reference_source": "Analytical no-slip rear-axle circle: R=L/tan(delta), yaw=v*t/R, x=R*sin(yaw), y=R*(1-cos(yaw)).",
+  "units": "SI",
+  "pose_reference": "rear_axle",
+  "time_step": 0.01,
+  "trace": "constant_circle.csv",
+  "vehicle_config": {},
+  "tolerances": {
+    "position": {
+      "rmse": 0.0001,
+      "max": 0.0002
+    },
+    "velocity": {
+      "rmse": 0.0001,
+      "max": 0.0002
+    },
+    "yaw": {
+      "rmse": 0.00001,
+      "max": 0.00002
+    },
+    "yaw_rate": {
+      "rmse": 1e-8,
+      "max": 1e-7
+    },
+    "lateral_velocity": {
+      "rmse": 1e-8,
+      "max": 1e-7
+    }
+  },
+  "initial_state": {
+    "velocity": 8,
+    "yaw_rate": 0.14827172852011491,
+    "lateral_velocity": 0.22240759278017236
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "name": "Single vehicle / constant acceleration",
+  "time_step": 0.01,
+  "duration": 10.0,
+  "traffic": { "enabled": false },
+  "vehicles": [
+    { "id": 1, "lane": "eastbound", "progress": 240.0, "speed": 0.0,
+      "automatic": false, "control": { "acceleration": 1.0, "steering_angle": 0.0 } }
+  ]
+}
