@@ -1,0 +1,40 @@
+{
+  "name": "dynamic_steady_circle",
+  "reference_kind": "analytical",
+  "reference_source": "Closed-form steady equilibrium of the linear single-track lateral equations (A*[vy,r]+B*delta=0), with rear-axle pose integrated analytically. No saturated tires, static axle loads.",
+  "units": "SI",
+  "pose_reference": "rear_axle",
+  "time_step": 0.01,
+  "trace": "dynamic_steady_circle.csv",
+  "vehicle_config": {
+    "dynamics_model": "dynamic_bicycle"
+  },
+  "tolerances": {
+    "position": {
+      "rmse": 0.0001,
+      "max": 0.0002
+    },
+    "velocity": {
+      "rmse": 0.0001,
+      "max": 0.0002
+    },
+    "yaw": {
+      "rmse": 0.00001,
+      "max": 0.00002
+    },
+    "yaw_rate": {
+      "rmse": 1e-7,
+      "max": 0.000001
+    },
+    "lateral_velocity": {
+      "rmse": 1e-7,
+      "max": 0.000001
+    }
+  },
+  "initial_state": {
+    "velocity": 12,
+    "yaw_rate": 0.07465870174433219,
+    "lateral_velocity": 0.02239761052329964,
+    "steering_angle": 0.02
+  }
+}
