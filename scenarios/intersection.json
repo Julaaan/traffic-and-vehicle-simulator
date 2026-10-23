@@ -1,9 +1,0 @@
-{
-  "name": "Four-way intersection / 100 vehicles",
-  "seed": 42,
-  "time_step": 0.01,
-  "duration": 60.0,
-  "map": { "type": "four_way_intersection", "arm_length": 240.0, "lane_width": 3.5 },
-  "traffic": { "enabled": true, "green_seconds": 12.0, "clearance_seconds": 2.0, "minimum_gap": 2.0, "time_headway": 1.3 },
-  "fleet": { "count": 100, "spacing": 9.0, "desired_speed": 12.0, "initial_speed": 0.0 }
-}
