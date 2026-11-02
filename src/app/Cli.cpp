@@ -1,8 +1,10 @@
+#include "DataGarageExport.hpp"
 #include "Options.hpp"
 #include "Output.hpp"
 #include "vsim/Replay.hpp"
 #include <chrono>
 #include <iostream>
+#include <optional>
 #include <stdexcept>
 
 int main(int argc, char** argv) {
@@ -35,20 +37,28 @@ int main(int argc, char** argv) {
         vsim::Simulation sim(vsim::app::loadInput(options));
         vsim::RunRecorder recorder(sim,options.record,options.failure_dir);
         const auto steps = vsim::app::runSteps(options, sim.scenario());
+        std::optional<vsim::app::DataGarageExport> garage;
+        if (!options.datagarage.empty()) garage.emplace(options, sim, steps);
         vsim::app::CsvOutput csv(options.csv);
         csv.sample(sim);
         const auto start = std::chrono::steady_clock::now();
         try {
             for (std::uint64_t i = 0; i < steps; ++i) {
                 sim.step(); recorder.capture(sim);
+                if (garage) garage->capture(sim);
                 if (sim.clock().tick() % options.sample_every == 0 || i + 1 == steps) csv.sample(sim);
             }
-        } catch (const std::exception& error) { recorder.failure(error.what()); throw; }
+        } catch (const std::exception& error) {
+            if (garage) garage->failure(error.what());
+            recorder.failure(error.what()); throw;
+        }
         recorder.finish(sim);
+        if (garage) garage->finish(sim);
         csv.flush();
         const double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - start).count();
         vsim::app::writeReport(options.report, sim, wall);
         vsim::app::printSummary(sim, wall);
+        if (garage) std::cout << "DataGarage run: " << garage->directory().string() << '\n';
         return 0;
     } catch (const std::exception& error) {
         std::cerr << "Error: " << error.what() << '\n';

@@ -1,4 +1,5 @@
 #include "Options.hpp"
+#include "DataGarageExport.hpp"
 #include "vsim/OsmImporter.hpp"
 #include "vsim/Serialization.hpp"
 #include "vsim/Dynamics.hpp"
@@ -23,6 +24,13 @@ double real(const std::string& value, const std::string& option) {
     const double result = std::stod(value, &used);
     if (used != value.size() || !std::isfinite(result) || result <= 0.0)
         throw std::invalid_argument(option + " requires a finite positive number");
+    return result;
+}
+double nonnegative(const std::string& value, const std::string& option) {
+    std::size_t used{};
+    const double result = std::stod(value, &used);
+    if (used != value.size() || !std::isfinite(result) || result < 0.0)
+        throw std::invalid_argument(option + " requires a finite nonnegative number");
     return result;
 }
 }
@@ -58,6 +66,17 @@ Options parseOptions(int argc, char** argv) {
         else if (argument == "--failure-dir") o.failure_dir = value;
         else if (argument == "--dynamics-profile") o.dynamics_profile = value;
         else if (argument == "--seek") o.seek = integer(value,argument);
+        else if (argument == "--datagarage") o.datagarage = value;
+        else if (argument == "--run-id") { validateRunId(value); o.run_id = value; }
+        else if (argument == "--delivery") {
+            if (value != "in_order" && value != "network") throw std::invalid_argument("--delivery must be in_order or network");
+            o.delivery = value;
+        } else if (argument == "--v2x-latency-ms") o.v2x_latency_ms = nonnegative(value, argument);
+        else if (argument == "--v2x-jitter-ms") o.v2x_jitter_ms = nonnegative(value, argument);
+        else if (argument == "--v2x-loss") {
+            o.v2x_loss = nonnegative(value, argument);
+            if (*o.v2x_loss >= 1.0) throw std::invalid_argument("--v2x-loss must be in [0,1)");
+        }
         else if (argument == "--sample-every") {
             o.sample_every = integer(value, argument);
             if (o.sample_every == 0) throw std::invalid_argument("Sample interval must be positive");
@@ -72,6 +91,12 @@ Options parseOptions(int argc, char** argv) {
         || !o.dynamics_profile.empty() || !o.record.empty() || !o.failure_dir.empty()))
         throw std::invalid_argument("Replay contains its own map, fleet and dynamics; do not combine it with input/recording overrides");
     if (o.verify_replay && (o.steps || o.duration || o.seek)) throw std::invalid_argument("--verify-replay verifies the complete recording");
+    if (o.datagarage.empty() && (!o.run_id.empty() || o.delivery != "in_order"))
+        throw std::invalid_argument("--run-id and --delivery require --datagarage");
+    if (o.delivery != "network" && (o.v2x_latency_ms || o.v2x_jitter_ms || o.v2x_loss))
+        throw std::invalid_argument("--v2x-* options require --delivery network");
+    if (!o.datagarage.empty() && !o.replay.empty())
+        throw std::invalid_argument("--datagarage exports simulated runs; it cannot be combined with --replay");
     validateOutputPaths({o.csv,o.report,o.screenshot,o.record},
         {o.replay.empty() ? (o.map.empty() ? o.scenario : o.map) : o.replay,o.dynamics_profile});
     return o;
@@ -126,6 +151,14 @@ void printHelp(bool viewer) {
         << "  --seek TICK           Start playback at an absolute recorded tick\n"
         << "  --verify-replay       Verify the entire replay without graphics (CLI)\n"
         << "  --help                Show this help\n";
+    if (!viewer) std::cout
+        << "DataGarage export (dg-events/1):\n"
+        << "  --datagarage DIR      Write intersection passages and waits as a run directory under DIR\n"
+        << "  --run-id ID           Run directory name (default: from scenario, seed and settings)\n"
+        << "  --delivery MODE       in_order (default) or network: events arrive over a simulated V2X link\n"
+        << "  --v2x-latency-ms MS   Network mode: fixed delay per message (default: 20)\n"
+        << "  --v2x-jitter-ms MS    Network mode: mean extra delay, exponentially distributed (default: 30)\n"
+        << "  --v2x-loss P          Network mode: probability that a message is lost (default: 0.01)\n";
     if (viewer) std::cout
         << "  --auto-exit           Close after the requested simulation duration\n"
         << "  --screenshot FILE     Save last displayed frame as BMP on exit\n"

@@ -31,7 +31,8 @@ add_library(sim_core
     src/core/World.cpp
     src/core/Simulation.cpp
     src/core/Batch.cpp
-    src/core/RoutePlanner.cpp)
+    src/core/RoutePlanner.cpp
+    src/core/TrafficEvents.cpp)
 target_include_directories(sim_core PUBLIC include)
 target_link_libraries(sim_core PUBLIC Threads::Threads)
 target_compile_features(sim_core PUBLIC cxx_std_20)
@@ -53,7 +54,7 @@ configure_file("${tinyxml2_SOURCE_DIR}/LICENSE.txt"
     "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/licenses/TinyXML2-LICENSE.txt" COPYONLY)
 add_library(sim_osm src/osm/OsmReader.cpp src/osm/OsmNetworkBuilder.cpp)
 target_link_libraries(sim_osm PUBLIC sim_core PRIVATE tinyxml2::tinyxml2)
-add_library(sim_app src/app/Options.cpp src/app/Output.cpp)
+add_library(sim_app src/app/Options.cpp src/app/Output.cpp src/app/DataGarageExport.cpp)
 target_include_directories(sim_app PUBLIC src/app)
 target_link_libraries(sim_app PUBLIC sim_scenarios sim_osm sim_io)
 
@@ -104,3 +105,8 @@ file(GLOB VSIM_DATA_FILES CONFIGURE_DEPENDS RELATIVE "${CMAKE_CURRENT_SOURCE_DIR
 foreach(data_file ${VSIM_DATA_FILES})
     configure_file("${data_file}" "${CMAKE_RUNTIME_OUTPUT_DIRECTORY}/${data_file}" COPYONLY)
 endforeach()
+
+enable_testing()
+add_test(NAME datagarage_export
+    COMMAND ${CMAKE_COMMAND} "-DSIM_CLI=$<TARGET_FILE:sim_cli>" "-DOUT=${CMAKE_BINARY_DIR}/test-datagarage"
+            -P "${CMAKE_CURRENT_SOURCE_DIR}/cmake/CheckDataGarageExport.cmake")

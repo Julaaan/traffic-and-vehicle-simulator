@@ -25,6 +25,7 @@ int main(int argc, char** argv) {
         const auto options = vsim::app::parseOptions(argc, argv);
         if (options.help) { vsim::app::printHelp(true); return 0; }
         if (options.verify_replay) throw std::invalid_argument("Use sim_cli for --verify-replay");
+        if (!options.datagarage.empty()) throw std::invalid_argument("Use sim_cli for --datagarage");
         std::unique_ptr<vsim::ReplayPlayer> playback;
         std::unique_ptr<vsim::Simulation> live;
         if (!options.replay.empty()) playback=std::make_unique<vsim::ReplayPlayer>(options.replay);

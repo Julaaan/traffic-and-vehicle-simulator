@@ -14,6 +14,9 @@ struct Options {
     std::filesystem::path report;
     std::filesystem::path screenshot;
     std::filesystem::path record, replay, failure_dir, dynamics_profile;
+    std::filesystem::path datagarage;
+    std::string run_id, delivery{"in_order"};
+    std::optional<double> v2x_latency_ms, v2x_jitter_ms, v2x_loss;
     std::optional<std::uint64_t> seek;
     std::uint64_t sample_every{10};
     bool help{};
